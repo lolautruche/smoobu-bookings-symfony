@@ -12,6 +12,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
 
@@ -24,6 +25,8 @@ class SmoobuOverdueBookingsCommand extends Command
     public function __construct(
         private BookingsFetcherInterface $bookingsFetcher,
         private MailerInterface $mailer,
+        #[Autowire('%app.email_sender%')]
+        private string $emailSender,
     )
     {
         parent::__construct();
@@ -32,7 +35,7 @@ class SmoobuOverdueBookingsCommand extends Command
     protected function configure(): void
     {
         $this
-            ->addOption('notify-email', null, InputOption::VALUE_OPTIONAL, 'Email address to notify if overdue bookings are found')
+            ->addOption('notify-email', null, InputOption::VALUE_OPTIONAL | InputOption::VALUE_IS_ARRAY, 'Email address(es) to notify if overdue bookings are found.')
         ;
     }
 
@@ -64,19 +67,19 @@ class SmoobuOverdueBookingsCommand extends Command
             $rows,
         );
 
-        $notifyEmail = $input->getOption('notify-email');
-        if (null !== $notifyEmail) {
-            $this->notify($bookings);
+        $notifyEmails = $input->getOption('notify-email');
+        if (null !== $notifyEmails) {
+            $this->notify($bookings, $notifyEmails);
         }
 
         return Command::SUCCESS;
     }
 
-    private function notify(BookingList $bookingList): void
+    private function notify(BookingList $bookingList, array $emailAddresses): void
     {
         $email = (new Email())
-            ->from('smoobu@sendmail.vieilledent.fr')
-            ->to('jerome@vieilledent.fr')
+            ->from($this->emailSender)
+            ->to(...$emailAddresses)
             ->subject('Smoobu overdue bookings')
             ->text(
                 "Following bookings are overdue:\n\n* " .
