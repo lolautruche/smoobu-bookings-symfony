@@ -9,6 +9,14 @@ framework:
     #esi: true
     #fragments: true
 
+    http_client:
+        scoped_clients:
+            smoobu.client:
+                base_uri: 'https://login.smoobu.com'
+                headers:
+                    Api-Key: '%env(resolve:SMOOBU_API_KEY)%'
+                    Cache-Control: 'no-cache'
+
 when@test:
     framework:
         test: true
