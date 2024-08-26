@@ -1,0 +1,35 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    {% if bookings is empty %}
+        <h1>No overdue bookings were found. All good ✅!</h1>
+    {% else %}
+        <h1>Found {{ bookings.totalItems }} bookings that are overdue 💶:</h1>
+
+        <table>
+            <tr>
+                <th>Booking #</th>
+                <th>🏡 Property</th>
+                <th>🦹 Guest</th>
+                <th>🛬 Arrival</th>
+                <th>🛫 Departure</th>
+                <th>💶 Total due</th>
+            </tr>
+            {% for booking in bookings %}
+            <tr>
+                <td><a href="{{ booking.url }}">{{ booking.id }}</a></td>
+                <td>{{ booking.property.name }}</td>
+                <td>{{ booking.guest.fullName }}</td>
+                <td>{{ booking.arrival|date('Y-m-d') }}</td>
+                <td>{{ booking.departure|date('Y-m-d') }}</td>
+                <td>{{ booking.dueAmount }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    {% endif %}
+{% endblock %}
+
+{% block title %}
+
+{% endblock %}
+
