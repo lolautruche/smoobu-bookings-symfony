@@ -21,6 +21,11 @@ class Booking
     /** @var int Max number of days before booking full payment is considered overdue. */
     const OVERDUE_DELTA = 30;
 
+    /**
+     * Format to generate the booking details URL on Smoobu.
+     */
+    const DETAILS_URL_FORMAT = 'https://login.smoobu.com/booking/detail/%d';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -351,5 +356,27 @@ class Booking
     public function isDirect(): bool
     {
         return in_array($this->channel->getId(), static::DIRECT_BOOKING_IDS);
+    }
+
+    public function getDueAmount(): int
+    {
+        return $this->price - $this->prepayment;
+    }
+
+    public function getUrl(): string
+    {
+        return sprintf(self::DETAILS_URL_FORMAT, $this->id);
+    }
+
+    public function __toString(): string
+    {
+        return sprintf(
+            '%s (%s) - From %s to %s (%s)',
+            $this->guest->getFullName(),
+            $this->property->getName(),
+            $this->arrival->format('Y-m-d'),
+            $this->departure->format('Y-m-d'),
+            $this->channel->getName(),
+        );
     }
 }
