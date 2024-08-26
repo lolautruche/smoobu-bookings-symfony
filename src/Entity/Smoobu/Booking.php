@@ -371,12 +371,13 @@ class Booking
     public function __toString(): string
     {
         return sprintf(
-            '%s (%s) - From %s to %s (%s)',
+            '%s (%s) - From %s to %s (%s) - %s',
             $this->guest->getFullName(),
             $this->property->getName(),
             $this->arrival->format('Y-m-d'),
             $this->departure->format('Y-m-d'),
             $this->channel->getName(),
+            $this->getUrl(),
         );
     }
 }
