@@ -3,8 +3,8 @@
 namespace App\Command;
 
 use App\Entity\Smoobu\Booking;
+use App\Entity\Smoobu\BookingList;
 use App\Smoobu\Fetcher\BookingsFetcherInterface;
-use App\Smoobu\Fetcher\OverdueBookingsFetcher;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -12,7 +12,8 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Email;
 
 #[AsCommand(
     name: 'smoobu:overdue-bookings',
@@ -22,6 +23,7 @@ class SmoobuOverdueBookingsCommand extends Command
 {
     public function __construct(
         private BookingsFetcherInterface $bookingsFetcher,
+        private MailerInterface $mailer,
     )
     {
         parent::__construct();
@@ -30,8 +32,7 @@ class SmoobuOverdueBookingsCommand extends Command
     protected function configure(): void
     {
         $this
-            ->addArgument('arg1', InputArgument::OPTIONAL, 'Argument description')
-            ->addOption('option1', null, InputOption::VALUE_NONE, 'Option description')
+            ->addOption('notify-email', null, InputOption::VALUE_OPTIONAL, 'Email address to notify if overdue bookings are found')
         ;
     }
 
@@ -63,6 +64,25 @@ class SmoobuOverdueBookingsCommand extends Command
             $rows,
         );
 
+        $notifyEmail = $input->getOption('notify-email');
+        if (null !== $notifyEmail) {
+            $this->notify($bookings);
+        }
+
         return Command::SUCCESS;
+    }
+
+    private function notify(BookingList $bookingList): void
+    {
+        $email = (new Email())
+            ->from('smoobu@sendmail.vieilledent.fr')
+            ->to('jerome@vieilledent.fr')
+            ->subject('Smoobu overdue bookings')
+            ->text(
+                "Following bookings are overdue:\n\n* " .
+                implode("\n* ", $bookingList->getBookings())
+            );
+
+        $this->mailer->send($email);
     }
 }
