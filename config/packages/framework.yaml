@@ -17,6 +17,11 @@ framework:
                     Api-Key: '%env(resolve:SMOOBU_API_KEY)%'
                     Cache-Control: 'no-cache'
 
+    # the IP address (or range) of your proxy
+    trusted_proxies: '%env(TRUSTED_PROXIES)%'
+    # trust *all* "X-Forwarded-*" headers
+    trusted_headers: ['x-forwarded-for', 'x-forwarded-host', 'x-forwarded-proto', 'x-forwarded-port', 'x-forwarded-prefix']
+
 when@test:
     framework:
         test: true
