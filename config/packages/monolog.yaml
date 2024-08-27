@@ -52,14 +52,6 @@ when@prod:
                 level: debug
                 formatter: monolog.formatter.json
                 nested: true
-            redis_logger:
-                type: redis
-                redis:
-                    host: "%env(LOG_REDIS_HOST)%"
-                    password: "%env(LOG_REDIS_PASSWORD)%"
-                    port: "%env(LOG_REDIS_PORT)%"
-                    database: 0
-                nested: true
             email_logger:
                 type: symfony_mailer
                 from_email: '%env(APP_EMAIL_FROM)%'
