@@ -43,7 +43,7 @@ when@prod:
             main:
                 type: fingers_crossed
                 action_level: critical
-                handler: redis_logger
+                handler: email_logger
                 excluded_http_codes: [404, 405]
                 buffer_size: 50 # How many messages should be saved? Prevent memory leaks
             stderr_logger:
@@ -60,6 +60,14 @@ when@prod:
                     port: "%env(LOG_REDIS_PORT)%"
                     database: 0
                 nested: true
+            email_logger:
+                type: symfony_mailer
+                from_email: '%env(APP_EMAIL_FROM)%'
+                to_email: '%env(LOG_EMAIL_TO)%'
+                subject: 'An Error Occurred! %%message%%'
+                level: debug
+                formatter: monolog.formatter.html
+                content_type: text/html
             console:
                 type: console
                 process_psr_3_messages: false
